@@ -1,0 +1,7 @@
+{
+  "name": "Nearest Hardware",
+  "description": "Find the nearest Home Depot, Ace Hardware, and Lowe's stores with ease. Optimized for large iPhone screens with PWA support.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

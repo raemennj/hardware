@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>Nearest Hardware</title>
+    <!-- PWA & iOS Specific Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hardware">
+    <meta name="theme-color" content="#E53E3E">
+    <link rel="manifest" href="manifest.webmanifest">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Custom Icon -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23E53E3E' d='M256 0C156.6 0 76 80.6 76 180c0 141.1 180 332 180 332s180-190.9 180-332c0-99.4-80.6-180-180-180z'/%3E%3Cpath fill='white' d='M340 120l-40-40c-10-10-25-10-35 0l-20 20 60 60 20-20c10-10 10-25 0-35zM220 180l-90 90c-5 5-5 13 0 18l30 30c5 5 13 5 18 0l90-90-48-48z'/%3E%3C/svg%3E">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              chest: {
+                red: '#E53E3E', // 45% lighter than #A11010
+                redDark: '#C53030',
+                silver: '#CBD5E1',
+                black: '#0F172A',
+                darker: '#0F172A', 
+                slate: '#475569' // 45% lighter than #1e293b
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Inter:wght@400;700;900&display=swap');
+      
+      body {
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+        background-color: #020617; /* Deep base */
+        color: #F8FAFC;
+        font-family: 'Inter', sans-serif;
+        scroll-behavior: smooth;
+      }
+      
+      h1, h2, h3, h4 {
+        font-family: 'Oswald', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+      }
+
+      .text-shadow-sm { text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+      .text-shadow-md { text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+      .toolbox-header {
+        background: linear-gradient(180deg, #A11010 0%, #8b0000 100%);
+        box-shadow: 0 4px 0 #4A0707, 0 8px 16px rgba(0, 0, 0, 0.4);
+      }
+
+      .ios-safe-pt { padding-top: env(safe-area-inset-top); }
+      .ios-safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+      
+      .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .accordion-content.open {
+        max-height: 5000px;
+      }
+
+      .accordion-container {
+        scroll-margin-top: calc(5.5rem + env(safe-area-inset-top));
+        border-bottom: 1px solid #1E293B;
+      }
+
+      .drawer-toggle {
+        background: #475569; /* Lighter slate */
+        position: relative;
+        transition: background 0.2s ease;
+      }
+      
+      .drawer-toggle::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 3px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        margin-bottom: 3px;
+      }
+
+      .leaflet-container {
+        width: 100%;
+        height: 100%;
+        /* Reasonable lighter map: slightly dimmed and desaturated to fit the dark theme without being neon. */
+        filter: brightness(0.9) contrast(1.05) saturate(0.85);
+      }
+
+      .btn-tactile {
+        transition: all 0.1s ease;
+        box-shadow: 0 4px 0 #7D0C0C, inset 0 1px 0 rgba(255,255,255,0.3);
+      }
+      .btn-tactile:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #7D0C0C, inset 0 1px 0 rgba(255,255,255,0.1);
+      }
+      
+      .btn-slate-tactile {
+        transition: all 0.1s ease;
+        box-shadow: 0 4px 0 #1E293B, inset 0 1px 0 rgba(255,255,255,0.2);
+      }
+      .btn-slate-tactile:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #1E293B, inset 0 1px 0 rgba(255,255,255,0.1);
+      }
+
+      .metal-bezel {
+        border: 2px solid #334155;
+        box-shadow: inset 0 4px 8px rgba(0,0,0,0.5);
+        border-radius: 4px;
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "leaflet": "https://esm.sh/leaflet@1.9.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
